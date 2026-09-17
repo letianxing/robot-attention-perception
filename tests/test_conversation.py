@@ -122,3 +122,49 @@ class ConversationTests(unittest.TestCase):
         self.assertEqual(turn['person_id'],'voice_person')
         self.assertEqual(turn['visual_person_id'],'face_person')
         self.assertTrue(turn['identity_conflict'])
+
+
+class TurningRoundTest(unittest.TestCase):
+    """人群在镜头外说话，其中一个人回头看机器人。
+
+    The case the field kept hitting. Nobody is on camera, so the voices are
+    clusters; then one of them turns round, and the sentence they said a moment
+    ago is filed under an identity nothing recognises. Binding it to the face
+    that appears where that voice was coming from is what makes it answerable.
+    """
+
+    def setUp(self):
+        self.observer = ConversationObserver()
+        self.track = AcousticTrack("voice1", 1000, True, .98, .95, azimuth_deg=28)
+
+    def crowd_member(self, azimuth, person_id="guest_2", confidence=.78):
+        return VisionPerson(person_id=person_id, stamp_ms=4000, azimuth_deg=azimuth,
+                            face_visible=True, face_confidence=.9, gaze_score=.88,
+                            body_facing_score=.8, identity_confidence=confidence, lip_motion=False)
+
+    def payload(self, azimuth=30, heard=3000):
+        return {"speakers": {"speakers": [{"speaker_id": "stranger_dd", "person_id": None,
+                                           "azimuth_deg": azimuth, "last_heard_ms": heard,
+                                           "display_name": "陌生人1"}]}}
+
+    def test_a_face_where_the_voice_was_is_the_same_person(self):
+        self.observer.update(4000, self.payload(), [self.track], [self.crowd_member(30)], False)
+        self.assertEqual(sorted(self.observer.voice_bindings["guest_2"]), ["stranger_dd"])
+
+    def test_two_people_in_the_same_direction_bind_to_neither(self):
+        people = [self.crowd_member(28, "guest_2"), self.crowd_member(34, "guest_3")]
+        self.observer.update(4000, self.payload(), [self.track], people, False)
+        self.assertEqual(self.observer.voice_bindings, {})
+
+    def test_a_voice_from_the_other_side_of_the_room_is_somebody_else(self):
+        self.observer.update(4000, self.payload(azimuth=-60), [self.track], [self.crowd_member(30)], False)
+        self.assertEqual(self.observer.voice_bindings, {})
+
+    def test_an_old_voice_is_not_bound_to_whoever_walks_in_later(self):
+        self.observer.update(90000, self.payload(heard=3000), [self.track], [self.crowd_member(30)], False)
+        self.assertEqual(self.observer.voice_bindings, {})
+
+    def test_bindings_expire(self):
+        self.observer.update(4000, self.payload(), [self.track], [self.crowd_member(30)], False)
+        self.observer._bind_voice("guest_9", "stranger_zz", 4000 + 700000)
+        self.assertNotIn("guest_2", self.observer.voice_bindings)
