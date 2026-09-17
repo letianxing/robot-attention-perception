@@ -1,0 +1,148 @@
+{
+  "name": "cocktail_effect_three_people",
+  "frames": [
+    {
+      "stamp_ms": 1000,
+      "robot": {
+        "speaking": false,
+        "moving": false
+      },
+      "vision_people": [
+        {
+          "person_id": "owner",
+          "role": "owner",
+          "azimuth_deg": 2.0,
+          "distance_m": 1.4,
+          "face_visible": true,
+          "face_confidence": 0.94,
+          "gaze_score": 0.86,
+          "body_facing_score": 0.82,
+          "bbox_area_ratio": 0.18,
+          "identity_confidence": 0.88
+        },
+        {
+          "person_id": "guest_left",
+          "role": "known",
+          "azimuth_deg": -42.0,
+          "distance_m": 1.8,
+          "face_visible": true,
+          "face_confidence": 0.91,
+          "gaze_score": 0.22,
+          "body_facing_score": 0.36,
+          "bbox_area_ratio": 0.12,
+          "identity_confidence": 0.74
+        },
+        {
+          "person_id": "stranger_right",
+          "role": "stranger",
+          "azimuth_deg": 38.0,
+          "distance_m": 2.0,
+          "face_visible": true,
+          "face_confidence": 0.86,
+          "gaze_score": 0.16,
+          "body_facing_score": 0.28,
+          "bbox_area_ratio": 0.08
+        }
+      ],
+      "acoustic_tracks": [
+        {
+          "track_id": "a_owner",
+          "voice_activity": true,
+          "speech_probability": 0.91,
+          "clarity": 0.82,
+          "azimuth_deg": 0.0,
+          "overlap_probability": 0.35,
+          "self_echo_probability": 0.02,
+          "transcript": {
+            "text": "Reachy 帮我看一下桌上的杯子",
+            "is_final": true,
+            "language": "zh-CN",
+            "clarity": 0.82,
+            "started_ms": 760,
+            "ended_ms": 980,
+            "emitted_ms": 1250
+          }
+        },
+        {
+          "track_id": "a_left",
+          "voice_activity": true,
+          "speech_probability": 0.87,
+          "clarity": 0.73,
+          "azimuth_deg": -40.0,
+          "overlap_probability": 0.55,
+          "self_echo_probability": 0.01,
+          "transcript": {
+            "text": "我今天不出去",
+            "is_final": true,
+            "language": "zh-CN",
+            "clarity": 0.73,
+            "started_ms": 790,
+            "ended_ms": 990,
+            "emitted_ms": 1320
+          }
+        }
+      ]
+    },
+    {
+      "stamp_ms": 1800,
+      "robot": {
+        "speaking": true,
+        "moving": false,
+        "playback_rms_db": 65.0
+      },
+      "vision_people": [
+        {
+          "person_id": "owner",
+          "role": "owner",
+          "azimuth_deg": 18.0,
+          "distance_m": 1.2,
+          "face_visible": true,
+          "face_confidence": 0.92,
+          "gaze_score": 0.79,
+          "body_facing_score": 0.80,
+          "bbox_area_ratio": 0.2,
+          "identity_confidence": 0.9
+        }
+      ],
+      "acoustic_tracks": [
+        {
+          "track_id": "robot_echo",
+          "voice_activity": true,
+          "speech_probability": 0.96,
+          "clarity": 0.9,
+          "azimuth_deg": 0.0,
+          "overlap_probability": 0.1,
+          "self_echo_probability": 0.96,
+          "transcript": {
+            "text": "现在开始",
+            "is_final": false,
+            "language": "zh-CN",
+            "clarity": 0.9,
+            "started_ms": 1500,
+            "ended_ms": 1750,
+            "emitted_ms": 1810
+          }
+        },
+        {
+          "track_id": "a_owner",
+          "voice_activity": true,
+          "speech_probability": 0.84,
+          "clarity": 0.76,
+          "azimuth_deg": 20.0,
+          "overlap_probability": 0.48,
+          "self_echo_probability": 0.03,
+          "transcript": {
+            "text": "不是现在开始",
+            "is_final": true,
+            "language": "zh-CN",
+            "clarity": 0.76,
+            "started_ms": 1560,
+            "ended_ms": 1780,
+            "emitted_ms": 2070
+          }
+        }
+      ]
+    }
+  ]
+}
+

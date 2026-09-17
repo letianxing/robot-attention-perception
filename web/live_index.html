@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>实时感知与回话总览</title><link rel="stylesheet" href="/live_styles.css">
+</head>
+<body>
+<header>
+  <div class="brand"><h1>实时感知与回话总览</h1><p id="session">摄像头 · 情绪 / 手势 · ASR / VAD · 注意力 · TTS</p></div>
+  <div class="health"><span id="visionHealth">视觉</span><span id="voiceHealth">声音</span><span id="rosHealth">ROS2</span><span id="memoryHealth">记忆</span><span id="brainHealth">Brain</span></div>
+  <div class="header-right">
+    <span id="captureStatus">等待实时数据…</span>
+    <div class="links"><a id="visionLink" target="_blank" rel="noopener">视觉 ↗</a><a id="voiceLink" target="_blank" rel="noopener">语音 ↗</a><a id="brainLink" target="_blank" rel="noopener">决策 ↗</a></div>
+  </div>
+</header>
+<div id="notice" role="status"></div>
+
+<!-- 设置全部收进抽屉，平时不占垂直空间 -->
+<details class="drawer"><summary>设置：采集设备 · 认识新朋友 · 注意力来源与判据权重</summary>
+  <div class="drawer-body">
+    <div class="controls"><label>摄像头<select id="camera"></select></label><label>麦克风配置<select id="profile"></select></label><label>输入设备<select id="microphone"></select></label><div class="commands"><button id="cameraApply">切换摄像头</button><button id="microphoneApply">切换麦克风</button><button id="start">启动全部采集</button><button id="stop" class="secondary">停止采集</button></div></div>
+    <section class="registration-panel">
+      <h2>认识新朋友</h2><p>填一个称呼，点击开始，然后面对镜头随便说一段话。请一人入镜、单独说话。</p>
+      <div class="identity-controls"><label>怎么称呼你<input id="registrationName" placeholder="例如：小天"></label><label>身份<select id="registrationRole"><option value="known">熟人</option><option value="owner">主人</option></select></label><button id="registrationStart">开始注册</button><button id="registrationCancel" class="secondary" disabled>取消</button></div>
+      <p id="registrationStatus" role="status">准备好后开始；至少说2秒，系统会自动采集人脸和声纹。</p>
+      <details><summary>高级身份绑定</summary><div class="identity-controls"><label>临时 Person<select id="temporaryPerson"></select></label><label>长期身份 ID<input id="persistentPerson" placeholder="例如 person1"></label><button id="registerPerson">注册并绑定</button><span id="behavior">--</span></div></details>
+    </section>
+    <section class="registration-panel">
+      <h2>注意力输入源与算法</h2>
+      <p class="hint">取消勾选是把该通道的证据从注意力计算中消融，不是关闭摄像头或麦克风。权重均为工程先验，未做现场标定。</p>
+      <div id="attentionSources" class="rows"><div class="empty">读取中…</div></div>
+      <div class="controls"><label>注意力算法<select id="attentionAlgorithm"></select></label><button id="attentionApply">应用</button></div>
+      <p class="hint">"这句话是不是在对我说"的判据权重：得分 ≥ 回复线立刻回，≥ 记住线先记下等注意力。</p>
+      <div id="attentionAddressee" class="rows"><div class="empty">读取中…</div></div>
+      <p id="addresseeLast" class="meta-line">最近一句的判定：--</p>
+      <p id="attentionAlgorithmDetail" class="meta-line">--</p>
+      <p id="attentionConfigStatus" role="status"></p>
+    </section>
+    <details class="raw-panel"><summary>本轮原始输入与决策数据</summary><pre id="rawSnapshot">--</pre></details>
+  </div>
+</details>
+
+<!-- 顶部：最近 30 秒声音活动 + 输入→门控→回复→播放/打断 -->
+<div class="topband">
+  <section class="signal-panel">
+    <div class="section-title"><h2>最近 30 秒声音活动</h2><span><i class="legend vad-key"></i>VAD<i class="legend tts-key"></i>TTS<i class="legend rms-key"></i>RMS</span></div>
+    <canvas id="signalPlot" width="1200" height="84" aria-label="VAD、TTS播放与输入音量的实时曲线"></canvas>
+  </section>
+  <section class="timeline-panel">
+    <div class="section-title"><h2>输入 → 门控 → 回复 → 播放 / 打断</h2><span id="memoryStatus">记忆：--</span></div>
+    <div id="timeline" class="timeline rows"><div class="empty">等待回话事件</div></div>
+  </section>
+</div>
+
+<!-- 鸡尾酒会：嘈杂环境下谁说了什么（声纹 · 人 · 内容） -->
+<section class="cocktail-panel">
+  <div class="section-title"><h2>鸡尾酒会 · 谁说了什么</h2><span id="cocktailStatus">等待语音</span></div>
+  <div class="cocktail-head"><span>声纹</span><span>人</span><span>ASR 内容</span></div>
+  <div id="cocktailRows" class="cocktail-rows"><div class="empty">房间里还没有人说话</div></div>
+</section>
+
+<!-- 三列：左 ASR/历史 · 中 摄像头 · 右 语音输入与回话 -->
+<main class="three">
+  <section class="col">
+    <div class="section-title"><h2>ASR / 历史记录</h2><span id="historyStatus">连接记忆服务…</span></div>
+    <div class="col-body">
+      <form id="historyForm" class="history-controls">
+        <label>关键词<input id="historyQuery" placeholder="例如：公园"></label>
+        <label>说话人<input id="historyPerson" placeholder="person1"></label>
+        <label>会话 ID<input id="historySession" placeholder="当前会话"></label>
+        <label>类型<select id="historyKind"><option value="all">输入与回复</option><option value="heard_utterance">仅 ASR 输入</option><option value="dialogue_turn">仅机器人回复</option><option value="robot_echo">被排除的自身回声</option></select></label>
+        <button type="submit">查询</button>
+      </form>
+      <div class="history-toolbar"><label><input type="checkbox" id="historyAuto" checked> 自动刷新</label><button id="historyPrev" class="secondary">上一页</button><button id="historyNext" class="secondary">更早</button></div>
+      <details id="historicalTrace"><summary>选中轮次的完整事件链</summary><div id="historyTraceRecords" class="timeline rows">点击记录中的“回溯这轮”</div></details>
+      <div id="historyRecords" class="history-records rows"><div class="empty">等待查询</div></div>
+    </div>
+  </section>
+
+  <section class="col">
+    <div class="section-title"><h2>摄像头实时画面</h2><span id="visionAge">--</span></div>
+    <div class="camera-stage"><img id="cameraStream" alt="摄像头实时画面"><div class="camera-overlay"><strong id="targetOverlay">等待目标</strong><span id="transportOverlay">等待感知数据</span></div></div>
+    <div class="col-body">
+      <div class="section-title"><h2>视觉原始输出</h2><span id="visionBackend">--</span></div>
+      <div id="visionPeople" class="rows"><div class="empty">尚无人物观测</div></div>
+      <div id="gestures" class="gesture-line">手势：--</div>
+      <div class="section-title"><h2>各环节实测耗时</h2><span>耗时与更新时间</span></div>
+      <div id="performance" class="audio-metrics"></div>
+    </div>
+  </section>
+
+  <section class="col">
+    <div class="section-title"><h2>语音输入与回话</h2><span id="vad" class="badge">未采集</span></div>
+    <div class="col-body">
+      <div class="transcript-label">流式 ASR <span id="partialState">partial</span><time id="partialTime">--</time></div>
+      <p id="partialText" class="transcript partial">等待语音…</p>
+      <div class="transcript-label">最终转写 <time id="finalTime">--</time></div>
+      <p id="finalText" class="transcript">--</p>
+      <div class="meta-line"><span id="speaker">说话人：--</span><span id="asrBackend">--</span></div>
+      <div class="audio-metrics" id="audioMetrics"></div>
+      <div class="gate-summary"><strong id="utteranceGate">最近一句：等待注意力标注</strong><span id="gateDetail">--</span></div>
+      <div id="reflexFocus" class="meta-line">惊跳 / 定向注意力：无</div>
+      <div id="engagement" class="meta-line">交流意愿：--</div>
+      <div id="liveAttention" class="meta-line">实时注意力：--</div>
+      <details><summary>全局工作区 / 注意力分布</summary><p id="workspaceSummary" class="meta-line">--</p><div id="workspaceCoalition" class="rows"></div><div id="attentionDistribution" class="rows"></div></details>
+
+      <div class="section-title reply-head"><h2>Brain / TTS 回话</h2><span id="replyStatus" class="badge">未连接</span></div>
+      <div class="tts-controls"><label><input id="ttsEnabled" type="checkbox"> TTS 播放</label><span id="ttsVoice">--</span><label>语速 <input id="ttsRate" type="range" min="140" max="280" step="10" value="210"><output id="ttsRateValue">210</output></label><span id="interruptCount">打断 0 次</span></div>
+      <div class="transcript-label">本次回复对应的输入 <span id="replyPath">--</span></div><p id="replyInput" class="reply-input">--</p>
+      <div class="transcript-label">回复内容</div><p id="replyText" class="transcript reply-text">等待门控后的输入…</p>
+      <p id="proactiveStatus" class="meta-line"></p><p id="playingChunk" class="meta-line"></p>
+      <div class="timings" id="timings"></div>
+      <details class="reply-memory"><summary id="replyMemoryTitle">本次参考记忆</summary><div id="replyMemories"></div></details>
+      <p id="replyEvidence" class="meta-line">--</p><p id="replyError" class="error-text"></p>
+    </div>
+  </section>
+</main>
+<script src="/live_app.js"></script>
+</body></html>

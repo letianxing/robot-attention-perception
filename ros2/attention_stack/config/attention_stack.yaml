@@ -1,0 +1,14 @@
+attention_stack:
+  ros__parameters:
+    binding_window_ms: 100
+    debounce_ms: 300
+    working_memory_ms: 8000
+    habituation_tau_ms: 5000.0
+    common_source_prior: 0.62
+    engage_threshold: 0.52
+    release_threshold: 0.22
+    lateral_inhibition: 0.18
+    hebbian_rate: 0.025
+    people_topic: /perception/vision/people
+    voices_topic: /perception/voice/tracks
+    attention_topic: /perception/attention/state

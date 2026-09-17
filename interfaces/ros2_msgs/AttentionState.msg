@@ -1,0 +1,12 @@
+std_msgs/Header header
+string target_id
+string target_kind
+float32 confidence
+bool listen
+bool addressed_to_robot
+string source_track_id
+string person_id
+bool has_azimuth
+float32 azimuth_deg
+string[] reasons
+

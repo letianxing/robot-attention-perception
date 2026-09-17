@@ -1,0 +1,16 @@
+@page { size: A4; margin: 14mm 12mm 16mm; }
+* { box-sizing: border-box; }
+body { color: #17221c; font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", Arial, sans-serif; font-size: 10pt; line-height: 1.55; }
+h1 { color: #0f5b3d; font-size: 25pt; line-height: 1.15; margin-top: 0; padding-bottom: 5mm; border-bottom: 3px solid #22835a; }
+h2 { color: #145d40; font-size: 16pt; margin-top: 9mm; border-bottom: 2px solid #a8cbb7; padding-bottom: 1mm; page-break-after: avoid; }
+h3 { color: #1b6a49; font-size: 12pt; page-break-after: avoid; }
+table { width: 100%; border-collapse: collapse; margin: 3mm 0 5mm; }
+thead { display: table-header-group; }
+tr { page-break-inside: avoid; }
+th, td { border: 1px solid #c9d7ce; padding: 1.8mm 2mm; vertical-align: top; }
+th { background: #eaf4ed; color: #15583c; text-align: left; }
+code { color: #145a3d; background: #edf5f0; padding: .3mm 1mm; }
+pre { background: #f2f5f3; border: 1px solid #d5dfd8; padding: 3mm; white-space: pre-wrap; page-break-inside: avoid; }
+blockquote { border-left: 3px solid #d47e25; background: #fff6e6; padding: 2mm 4mm; }
+li { margin: 1mm 0; }
+.mermaid { display: none; }

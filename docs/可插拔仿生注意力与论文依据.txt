@@ -1,0 +1,42 @@
+可插拔仿生注意力第一版（2026-09-16）
+
+结论
+视听融合+工作记忆/会话上下文足以构成可试用第一版，不必等待内部状态系统完成。
+这是功能仿生工程模型，不代表已复现人类认知或通过现场可靠性验收。科研论文里的成功率不能搬来当本机准确率。
+
+原始研究及适用边界
+1. Eldardeer et al. 2021, A Biological Inspired Cognitive Framework for Memory-Based Multi-Sensory Joint Attention in Human-Robot Interactive Tasks.
+https://www.frontiersin.org/journals/neurorobotics/articles/10.3389/fnbot.2021.648595/full
+iCub实验将音视觉、工作记忆、决策与动作组织成闭环。记忆存刺激/动作/置信状态，帮助控制重复与重新定向。支持当前工作记忆设计，不等同长期语义检索或多人聊天已解决。
+2. Bohus & Horvitz 2009, Models for Multiparty Engagement in Open-World Dialog.
+https://aclanthology.org/W09-3933/
+参与状态、交互意图、决策及协调行为分层，适用于谁在交流、何时加入/结束。与目前参与者/预期回答/注意力状态对应。
+3. Breazeal & Scassellati 1999, A context-dependent attention system for a social robot.
+https://www.media.mit.edu/publications/a-context-dependent-attention-system-for-a-social-robot-2/
+把感知显著性、习惯化及动机/行为状态结合。支持未来内部状态作为调制输入，而不是必须有心理状态模型才能启动感知。
+
+当前接线
+Brain持久历史检索仍独立为千问服务；快速注意循环不每50ms请求长期记忆/大模型。
+Brain /brain/state额外输出attention_memory：近期参与者及最近发言时间、等待回答对象和有效期。
+AttentionSources聚合三种来源，每种都有enabled/available/reason状态：
+- audio_visual：跨模态关联增益；实际身份/位置/时效由各候选检查。
+- memory_context：正在对话的目标支持、当前可见的近期参与者弱先验、等待该人回答的目标支持；同session，Brain状态过期1200ms撤销。
+- internal_state：默认不启用，没有输入就不产生动机或唤醒值。底层数学更新的gain=1仅是“无调制”的恒等参数，不代表测得平静。
+所有来源只能改变有限的竞争支持，不能创建当前未观测的人、改写身份或直接放行TTS/实体动作。
+
+配置与消融
+默认：ATTENTION_SOURCES=audio_visual,memory_context
+只看视听增强：ATTENTION_SOURCES=audio_visual
+未来有真实内部状态后：ATTENTION_SOURCES=audio_visual,memory_context,internal_state
+这是注意支持源的插拔，不是关闭摄像头/麦克风或安全反射。来源关闭后基础感知、明确呼叫、安全通路仍在。
+可对同一段输入比较开关memory_context前后的目标切换、遗忘待答、重复问候、误打断；切勿只看分数上升。
+
+内部状态扩展协议（本项目适配入口，非修改pacific-rim正式IDL）
+ROS std_msgs/msg/String /brain/internal_state 的JSON：
+{"schema_version":1,"session_id":"mac-conversation-test","stamp_ms":毫秒时间戳,"arousal_gain":1.0,"candidate_support":{"visual:owner":0.4}}
+arousal_gain限0.5–2；candidate_support限0–1，最多64项；NaN/错会话拒绝，1500ms过期后撤销。只能作用于真实存在的候选。
+没有生产者时一直标记missing_or_stale，不模拟输入。将来接正式内部状态服务需要通过协议适配，保持原模块边界。
+
+验证
+Attention101项、Brain60项、页面DOM通过；覆盖来源关闭、缺失、过期、错会话、非法数值、无当前对象不加目标、默认无内部状态依然运行。
+8092注意力分布区显示来源状态。尚未开采集做现场全栈验收；本机服务关闭，162Qwen保持运行。

@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>attention_stack</name>
+  <version>0.1.0</version>
+  <description>Low-latency staged audiovisual attention stack.</description>
+  <maintainer email="maintainer@example.com">attention maintainers</maintainer>
+  <license>Apache-2.0</license>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <depend>geometry_msgs</depend>
+  <depend>hri_msgs</depend>
+  <depend>perception_interfaces</depend>
+  <depend>rclcpp</depend>
+  <depend>std_msgs</depend>
+  <exec_depend>libhri</exec_depend>
+  <exec_depend>pyhri</exec_depend>
+  <exec_depend>rclpy</exec_depend>
+  <export><build_type>ament_cmake</build_type></export>
+</package>

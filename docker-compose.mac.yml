@@ -1,0 +1,24 @@
+services:
+  ros2-perception:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      additional_contexts:
+        brain_audio_interfaces: ../pacific-rim/module/service/robo_brain_service/ros2/src/audio_msgs
+      args:
+        ROS_DISTRO: "${ROS_DISTRO:-jazzy}"
+        ROS_BASE_IMAGE: "${ROS_BASE_IMAGE:-ros:${ROS_DISTRO:-jazzy}-ros-base}"
+    image: robot-attention-perception:ros2-${ROS_DISTRO:-jazzy}
+    container_name: robot-attention-ros2
+    environment:
+      ROS_DOMAIN_ID: "42"
+    ports:
+      - "${ROSBRIDGE_PORT:-9090}:9090"
+    volumes:
+      - .:/workspace/robot-attention-perception:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import socket;s=socket.create_connection(('127.0.0.1',9090),2);s.close()"]
+      interval: 5s
+      timeout: 3s
+      retries: 12

@@ -1,0 +1,48 @@
+{
+  "latency_budget_ms": {
+    "audio_capture_frame": 20,
+    "vad": 20,
+    "doa_tracking": 60,
+    "vision_state_update": 250,
+    "attention_fusion": 10,
+    "asr_partial_target": 600,
+    "asr_final_target_after_speech_end": 1500
+  },
+  "microphone_profiles": [
+    {
+      "id": "mac_builtin",
+      "label": "Mac built-in microphone",
+      "channels": "1-3 depending on hardware",
+      "sample_rate_hz": 48000,
+      "doa": "not reliable",
+      "recommended_use": "ASR, VAD, simple wake word, no robust cocktail-party localization"
+    },
+    {
+      "id": "windows_wasapi_builtin",
+      "label": "Windows WASAPI built-in/default microphone",
+      "channels": "usually 1-2",
+      "sample_rate_hz": 16000,
+      "doa": "not reliable",
+      "recommended_use": "ASR, VAD, simple wake word"
+    },
+    {
+      "id": "sipeed_6_plus_1_usb_array",
+      "label": "Sipeed 6+1 Mic Array USB",
+      "channels": 8,
+      "sample_rate_hz": 48000,
+      "sample_format": "S16_LE",
+      "extra_serial": "16x16 sound field, 2 Mbps",
+      "doa": "usable after channel mapping, geometry calibration, and robot-frame transform",
+      "recommended_use": "near/far-field DOA, source tracking, beamformed ASR input"
+    },
+    {
+      "id": "reachy_mini_audio",
+      "label": "Reachy Mini own audio stack",
+      "channels": "use official media stack profile",
+      "sample_rate_hz": 48000,
+      "doa": "depends on exposed raw channels",
+      "recommended_use": "native robot capture/playback and echo cancellation integration"
+    }
+  ]
+}
+

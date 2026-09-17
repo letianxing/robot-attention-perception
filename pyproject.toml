@@ -1,0 +1,10 @@
+[project]
+name = "robot-attention-perception"
+version = "0.1.0"
+description = "Simulated robot audio-visual attention fusion for cocktail-party perception."
+requires-python = ">=3.10"
+dependencies = []
+
+[tool.setuptools]
+packages = ["robot_attention_perception"]
+

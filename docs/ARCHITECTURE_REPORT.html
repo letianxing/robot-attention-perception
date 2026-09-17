@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>仿生视听感知系统架构与手工测试指南</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="architecture_report.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">仿生视听感知系统架构与手工测试指南</h1>
+</header>
+<h1
+id="仿生视听感知系统架构数据流与手工测试指南">仿生视听感知系统：架构、数据流与手工测试指南</h1>
+<p>生成日期：2026-09-11</p>
+<h2 id="可直接执行的测试入口">0. 可直接执行的测试入口</h2>
+<p>以下命令以 macOS + Docker Desktop + ROS 2 Jazzy + Sipeed 6+1
+为准。</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> ~/Golands/robot-attention-perception</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="va">ROS_DISTRO</span><span class="op">=</span>jazzy <span class="va">ROS_BASE_IMAGE</span><span class="op">=</span>ros:jazzy-ros-base <span class="dt">\</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="ex">docker</span> compose <span class="at">-f</span> docker-compose.mac.yml up <span class="at">-d</span> <span class="at">--build</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="ex">scripts/setup_mac_first_test.sh</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="va">OPEN_BROWSER</span><span class="op">=</span>0 <span class="ex">scripts/run_mac_first_test.sh</span></span></code></pre></div>
+<p>控制台地址：<code>http://127.0.0.1:8092</code>；视觉：<code>http://127.0.0.1:8080</code>；语音：<code>http://127.0.0.1:8090</code>；
+记忆：<code>http://127.0.0.1:8788/v1/health</code>；ROS
+bridge：<code>ws://127.0.0.1:9090</code>。</p>
+<p>在控制台选择 <code>profile=sipeed_6_plus_1_usb_array</code> 和
+<code>device=MicArray</code>（本机通常为编号 1），点击“启动感知”。</p>
+<p>如果 8092 的“声学”仍为红色，先看：</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-fsS</span> http://127.0.0.1:8090/api/state</span></code></pre></div>
+<p>必须满足 <code>running=true</code> 且 <code>error=""</code>。若出现
+<code>PortAudio -9986</code>，先执行
+<code>scripts/stop_mac_first_test.sh</code>，确认没有其他程序占用麦克风，再重新运行
+<code>OPEN_BROWSER=0 scripts/run_mac_first_test.sh</code>；本机 Sipeed
+枚举应为 <code>MicArray</code>、8 输入通道、 设备编号通常为
+<code>0</code>。可用以下命令独立确认句柄：</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> ~/Golands/voice-detection</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ex">~/Golands/robot-attention-perception/.venv-mac/bin/python</span> <span class="at">-m</span> voice_detection.cli list-devices</span></code></pre></div>
+<h3 id="硬件-smoke-test">0.1 硬件 smoke test</h3>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> ~/Golands/voice-detection</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="ex">~/Golands/robot-attention-perception/.venv-mac/bin/python</span> <span class="at">-m</span> voice_detection.cli list-devices</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">mkdir</span> <span class="at">-p</span> data</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="ex">~/Golands/robot-attention-perception/.venv-mac/bin/python</span> <span class="at">-m</span> voice_detection.cli record-live <span class="dt">\</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">--profile</span> sipeed_6_plus_1_usb_array <span class="at">--device</span> 1 <span class="at">--seconds</span> 3 <span class="at">--output</span> data/sipeed_smoke.wav</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="ex">~/Golands/robot-attention-perception/.venv-mac/bin/python</span> <span class="at">-m</span> voice_detection.cli analyze-wav <span class="dt">\</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">--profile</span> sipeed_6_plus_1_usb_array <span class="at">--wav</span> data/sipeed_smoke.wav</span></code></pre></div>
+<p>通过条件：<code>channel_count=8</code>、<code>sample_rate_hz=48000</code>，所有通道
+<code>silent=false</code> 且 <code>clipping=false</code>。</p>
+<h3 id="ros4hri-与注意力验证">0.2 ROS4HRI 与注意力验证</h3>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> ~/Golands/robot-attention-perception</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="ex">scripts/check_ros4hri_topics.sh</span> <span class="kw">||</span> <span class="fu">true</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> exec robot-attention-ros2 bash <span class="at">-lc</span> <span class="dt">\</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;source /opt/ros/jazzy/setup.bash; ros2 node list&#39;</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> exec robot-attention-ros2 bash <span class="at">-lc</span> <span class="dt">\</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;source /opt/ros/jazzy/setup.bash; ros2 topic echo /humans/voices/tracked&#39;</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> exec robot-attention-ros2 bash <span class="at">-lc</span> <span class="dt">\</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;source /opt/ros/jazzy/setup.bash; ros2 topic echo /attention/state&#39;</span></span></code></pre></div>
+<p>说话时应看到
+<code>voice_id/track_id</code>、DOA、<code>target_id</code>、<code>confidence</code>、<code>listen</code>
+和 <code>reasons</code> 更新； 机器人未被寻址时
+<code>listen=false</code> 是正常门控结果。</p>
+<h2 id="停止与重新启动">0.3 停止与重新启动</h2>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-fsS</span> http://127.0.0.1:8090/api/stop <span class="kw">||</span> <span class="fu">true</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> compose <span class="at">-f</span> docker-compose.mac.yml down</span></code></pre></div>
+<p>重新测试时再次执行 0 节命令。长时场景中途重启 ASR 后，必须确认
+<code>/api/state</code> 的 <code>running=true</code> 且新 transcript 的
+<code>is_final=true</code>。</p>
+<h2 id="个场景的统一操作步骤">0.4 49 个场景的统一操作步骤</h2>
+<p>场景文件为
+<code>~/Golands/voice-detection/data/asr_acceptance_scenarios.jsonl</code>，共
+49 条。每一条都按以下步骤：</p>
+<ol type="1">
+<li>记录场景 ID、日期、操作者、设备、距离、方向和噪声条件。</li>
+<li>确认 <code>/api/state</code> 的
+<code>running=true</code>，清空上一条 transcript。</li>
+<li>严格按场景原句说话；需要重复时保持重复次数一致。</li>
+<li>等待
+<code>last_transcript.is_final=true</code>，再记录最终文字。</li>
+<li>记录
+<code>voice_id</code>、<code>azimuth_deg</code>、<code>clarity</code>、<code>overlap_probability</code>、<code>self_echo_probability</code>。
+同时记录
+<code>voice.last_streaming_transcript.text</code>、<code>first_result_latency_ms</code>
+和 <code>final_latency_ms</code>， 用来判断 ASR
+是否真正流式输出，以及最终端点等待是否过长。</li>
+<li>同时记录 <code>/attention/state</code> 的
+<code>target_id</code>、<code>listen</code>、<code>addressed_to_robot</code>
+和 <code>confidence</code>。</li>
+<li>对照场景重点判断专名、数字、否定、顺序、多人目标和机器人播放抑制是否正确。</li>
+<li>每完成 10 条保存一次结果；完成后导出 memory 事件。</li>
+</ol>
+<p>单条记录可用：</p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-fsS</span> http://127.0.0.1:8090/api/state <span class="op">&gt;</span> /tmp/voice_state.json</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-fsS</span> http://127.0.0.1:8092/api/state <span class="op">&gt;</span> /tmp/attention_state.json</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-fsS</span> http://127.0.0.1:8788/v1/health</span></code></pre></div>
+<h3 id="条场景分组">49 条场景分组</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>编号</th>
+<th>分组</th>
+<th>执行方法</th>
+<th>重点判定</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1–14</td>
+<td>语言内容</td>
+<td>安静、正面、1.5m，逐句执行</td>
+<td>自然句、专名、数字、否定、转述、条件和改口</td>
+</tr>
+<tr>
+<td>15–20</td>
+<td>说话方式</td>
+<td>保持位置，改变语速、音量、口音和非语言声音</td>
+<td>VAD 截断、口头语、笑声/咳嗽误识别</td>
+</tr>
+<tr>
+<td>21–27</td>
+<td>距离方向遮挡</td>
+<td>0.5/1.5/3/6m，侧身、背向、左右和局部遮挡</td>
+<td>DOA、视觉 track、person/voice 匹配</td>
+</tr>
+<tr>
+<td>28–34</td>
+<td>噪声混响</td>
+<td>空调、电视、音乐、风雨、突发噪声、走廊/玻璃门</td>
+<td>clarity、VAD、overlap、ASR 降级</td>
+</tr>
+<tr>
+<td>35–38</td>
+<td>机器人状态</td>
+<td>TTS 播放、barge-in、相近内容、机器人运动</td>
+<td>self-echo、playback 状态和用户语音放行</td>
+</tr>
+<tr>
+<td>39–44</td>
+<td>多人鸡尾酒</td>
+<td>2–3 人依次/重叠/换位说话，每条至少 5 次</td>
+<td>voice_id 串位、目标切换时延和注意力目标</td>
+</tr>
+<tr>
+<td>45–49</td>
+<td>长时恢复</td>
+<td>长静默、连续多轮、长时运行、重启、网络中断恢复</td>
+<td>进程稳定性、队列、ID 重建和 memory 补写</td>
+</tr>
+</tbody>
+</table>
+<h3 id="通过标准">通过标准</h3>
+<ul>
+<li>ASR：否定、数字、专名、时间关系不能改变语义。</li>
+<li>声学：方向基本正确；重叠时有明确
+overlap；机器人播放不应被识别为用户。</li>
+<li>注意力：目标选择合理，信号过期时不应继续
+<code>listen=true</code>；视觉不可用时允许声学降级。</li>
+<li>ROS4HRI：<code>/humans/*</code>、<code>/tf</code>、<code>/attention/*</code>
+持续发布且 ID 关系可追溯。</li>
+</ul>
+<h2 id="ros4hrijazzy-使用说明当前版本">ROS4HRI/Jazzy
+使用说明（当前版本）</h2>
+<p>本指南的对外接口以 ROS4HRI REP-155 为准：Person
+是长期身份，Face/Body/Voice 是临时观测，所有标准 HRI 数据位于
+<code>/humans/</code> 命名空间。四个仓库保留原有算法和测试方式，但通过
+ingress 和 <code>pyhri.HRIListener</code> 接入标准接口。ROS 2 Jazzy
+是首选发行版，Humble 作为兼容目标。</p>
+<h3 id="标准安装">标准安装</h3>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> apt update</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> apt install ros-jazzy-hri-msgs ros-jazzy-hri-actions-msgs <span class="dt">\</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  ros-jazzy-hri ros-jazzy-pyhri ros-jazzy-human-description ros-jazzy-hri-rviz</span></code></pre></div>
+<p>另外从 ROS4HRI 源码安装
+<code>hri_face_detect</code>、<code>hri_emotion_recognizer</code>、<code>hri_face_identification</code>、
+<code>hri_body_detect</code>、<code>hri_person_manager</code>、<code>hri_engagement</code>、<code>hri_visualization</code>
+和 <code>rqt_human_radar</code>。</p>
+<p>Docker 也支持
+Jazzy：<code>ROS_DISTRO=jazzy ROS_BASE_IMAGE=ros:jazzy-ros-base docker compose -f docker-compose.mac.yml up -d --build</code>。
+自研 <code>vision-detection</code> 可以替代 detector，但必须继续通过
+<code>/vision/people</code> + bridge 输出 REP-155 数据。</p>
+<h3 id="一眼可执行的启动验证命令">一眼可执行的启动/验证命令</h3>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> ~/Golands/robot-attention-perception</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="ex">colcon</span> build <span class="at">--symlink-install</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="bu">source</span> install/setup.bash</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="ex">ros2</span> launch attention_stack ros4hri_attention.launch.py <span class="dt">\</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  use_person_manager:=true use_pyhri_adapter:=true</span></code></pre></div>
+<p>若采用 ROS4HRI 官方视觉节点而不是自研视觉 backend：</p>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="ex">ros2</span> launch attention_stack ros4hri_attention.launch.py <span class="dt">\</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  use_official_detectors:=true use_person_manager:=true use_pyhri_adapter:=true</span></code></pre></div>
+<p>另一个终端启动本地视觉、声学后端（保留原有命令）：</p>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="ex">scripts/run_vision_dashboard.sh</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="ex">scripts/run_voice_dashboard.sh</span></span></code></pre></div>
+<p>检查标准输出和注意力：</p>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="ex">ros2</span> topic list <span class="kw">|</span> <span class="fu">grep</span> <span class="st">&#39;^/humans/&#39;</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="ex">ros2</span> topic echo /humans/persons/tracked</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="ex">ros2</span> topic echo /humans/voices/tracked</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="ex">ros2</span> topic echo /attention/state</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="ex">ros2</span> topic echo /attention/look_at</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="ex">ros2</span> run rqt_human_radar rqt_human_radar</span></code></pre></div>
+<p>官方 <code>hri_person_manager</code> 负责
+<code>/humans/candidate_matches</code>
+的概率人员融合；<code>pyhri_people_adapter.py</code> 使用
+<code>hri.HRIListener</code> 读取标准人类对象并转换到 attention
+的强类型消息。注意力算法、声学处理、视觉模型、 ASR 场景测试和 memory
+HTTP API 均保持原有实现。</p>
+<h2 id="结论">结论</h2>
+<p>本系统由四个可以分别启动、分别替换、通过 ROS2
+契约互通的仓库组成：<code>vision-detection</code>、<code>voice-detection</code>、<code>robot-attention-perception</code>
+和 <code>hri-memory-service</code>。Mac 第一次测试使用 Mac
+摄像头与用户选择的麦克风；Sipeed 6+1 到位后只切换麦克风
+profile；RealSense D405/D435i 或 INDEMIND M1 到位后只切换视觉
+source。</p>
+<p>当前身份链路采用可落地的预训练/特征编码器边界：视觉使用 OpenCV SFace
+产生人脸向量；人脸向量注册写入本地缓存并同步到
+<code>hri-memory-service</code> 的 <code>identity-registry</code>
+作用域。检索使用余弦相似度，在线注意力只消费已经确认的 Person
+身份，不把单帧低置信度匹配当成权限结论。声学说话人向量模型仍需单独接入，不能把当前临时
+<code>voice_id</code> 当成跨会话声纹身份。</p>
+<h2 id="一四体总架构图">一、四体总架构图</h2>
+<pre class="text"><code>┌──────────────────────┐       ┌──────────────────────┐
+│ Mac / RealSense / M1 │       │ Mac / Sipeed / Reachy│
+│ RGB、深度、IMU        │       │ 原始音频、播放参考     │
+└──────────┬───────────┘       └──────────┬───────────┘
+           │                               │
+           v                               v
+┌──────────────────────┐       ┌──────────────────────┐
+│ vision-detection     │       │ voice-detection      │
+│ face/body/gaze/depth │       │ DOA/beam/AEC/VAD/ASR │
+└──────────┬───────────┘       └──────────┬───────────┘
+           │ People                         │ AcousticTracks
+           └──────────────┬────────────────┘
+                          v
+                 ┌─────────────────────┐
+                 │ ROS2 + rosbridge    │
+                 │ typed interfaces    │
+                 └──────────┬──────────┘
+                            v
+                 ┌─────────────────────┐
+                 │ attention_stack C++ │
+                 │ S1-S5 + BCI + WTA   │
+                 │ PersonManager       │
+                 └──────┬───────┬──────┘
+                        │       │
+             look_at/ID │       │ gated target audio
+                        v       v
+                 ┌──────────┐  ┌──────────────┐
+                 │ head/eye │  │ S2S / TTS    │
+                 │ control  │  │ playback AEC │
+                 └──────────┘  └──────┬───────┘
+                                      │
+                                      v
+                            ┌──────────────────┐
+                            │ hri-memory-service│
+                            │ Rust event/trace │
+                            └──────────────────┘</code></pre>
+<p>Mac 原生进程负责访问 macOS 摄像头和 CoreAudio/PortAudio；Docker
+Desktop 运行 ROS2 Humble、rosbridge、ROS4HRI ingress 和 C++
+<code>attention_stack</code>。这样既是真实 ROS2 通信，又不要求 Docker
+直接访问 Mac 摄像头和麦克风。</p>
+<h2 id="二四个仓库的职责">二、四个仓库的职责</h2>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>仓库</th>
+<th>负责什么</th>
+<th>不负责什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>vision-detection</code></td>
+<td>RGB/RGB-D 采集；人、脸、身体、手势、gaze、嘴部运动、情绪、深度、稳定
+transient ID。</td>
+<td>不决定是否应该回应，不处理权限和意图。</td>
+</tr>
+<tr>
+<td><code>voice-detection</code></td>
+<td>Mac/Windows/Sipeed/Reachy 设备抽象；8ch
+DOA、波束、AEC、降噪、VAD、重叠提示、声源跟踪、ASR、播放参考。</td>
+<td>不决定身份权限、意图和最终回应。</td>
+</tr>
+<tr>
+<td><code>robot-attention-perception</code></td>
+<td>异步多率缓存、Face/Body/Voice 概率绑定、匿名/长期 Person、BCI
+共同来源、S1-S5 attention、S2S 门控。</td>
+<td>不把 ASR 文字解释成动作意图。</td>
+</tr>
+<tr>
+<td><code>hri-memory-service</code></td>
+<td>Rust 本地事件、文本、向量、结构化数据、媒体 URI、source topic、trace
+查询。</td>
+<td>不直接改变在线注意力决策。</td>
+</tr>
+</tbody>
+</table>
+<p>身份向量操作：</p>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 在摄像头前保持正脸，先注册视觉身份（8092 的“注册并绑定”会同时执行）</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-X</span> POST http://127.0.0.1:8080/api/enroll <span class="dt">\</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">-H</span> <span class="st">&#39;content-type: application/json&#39;</span> <span class="dt">\</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">-d</span> <span class="st">&#39;{&quot;user_id&quot;:&quot;owner&quot;,&quot;user_role&quot;:&quot;owner&quot;}&#39;</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="co"># 查询身份向量库（跨测试 session，固定使用 identity-registry）</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-X</span> POST http://127.0.0.1:8788/v1/search <span class="dt">\</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">-H</span> <span class="st">&#39;content-type: application/json&#39;</span> <span class="dt">\</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">-d</span> <span class="st">&#39;{&quot;scope&quot;:{&quot;subject_id&quot;:&quot;local-user&quot;,&quot;robot_id&quot;:&quot;reachy-mini&quot;,&quot;session_id&quot;:&quot;identity-registry&quot;},&quot;query_embedding&quot;:[...],&quot;kind&quot;:&quot;face_identity_profile&quot;,&quot;limit&quot;:5}&#39;</span></span></code></pre></div>
+<h2 id="三声学链路">三、声学链路</h2>
+<pre class="text"><code>原始 PCM
+  -&gt; DOA/GCC-PHAT + 6通道空间波束
+  -&gt; AEC / 稳态降噪 / 可选神经增强
+  -&gt; VAD / overlap / source tracker
+  -&gt; 分离目标音频 / ASR
+  -&gt; attention gate
+  -&gt; S2S/TTS
+  -&gt; playback reference 回到 AEC</code></pre>
+<p>Sipeed 6+1 采用原始 CH0-CH5 做空间处理，CH6 不直接作为主输入，CH7
+作为设备参考候选，具体角色由实测确认。原始阵列上不能先做会破坏相位的降噪。Mac/Jetson
+获取原始8ch，4090 可运行 ODAS/HARK/Asteroid/SpeechBrain/FunASR
+等重模块，回传 <code>AcousticTracks</code> 和增强音频。</p>
+<p>机器人播放的 <code>tts_service/msg/AudioFrame</code>
+经过播放参考缓冲按时间戳对齐。机器人播放状态通过
+<code>/robot/playback_state</code> 进入 attention；self-echo
+高时拒绝把机器人声音作为注意目标，防止自说自听。</p>
+<h2 id="四视觉和深度链路">四、视觉和深度链路</h2>
+<p>Mac 摄像头输出人物方位和低置信的 <code>monocular_size_proxy</code>
+距离，只用于首测。RealSense 使用彩色图和对齐深度；D405
+适合近距离约7cm-50cm，不适合替代远距离深度相机。D435i 用于更广泛的
+RGB-D/IMU 场景。INDEMIND M1 使用 Linux/Jetson/ROS 厂商 SDK
+输出双目图像、深度和 IMU，再映射到统一 <code>People</code> 接口。</p>
+<p>设备组合完全独立：</p>
+<pre class="text"><code>Mac camera       + Mac built-in microphone
+Mac camera       + Sipeed 6+1
+RealSense D405   + Sipeed 6+1
+RealSense D435i  + Sipeed 6+1
+INDEMIND M1      + Sipeed 6+1</code></pre>
+<h2 id="五视听融合机制">五、视听融合机制</h2>
+<h3 id="s1方位显著性">S1：方位显著性</h3>
+<p>视觉和声学统一到 <code>36-bin × 10°</code> 的 egocentric
+方位网格，供竞争和记忆使用。最终 <code>/attention/look_at</code> 和
+attention JSON 保留原始视觉/声学加权小数角度，界面显示两位小数；10° bin
+不代表物理定位精度。</p>
+<h3 id="s2时间绑定和-fission">S2：时间绑定和 fission</h3>
+<p>默认绑定窗口为 <code>±100ms</code>。以视觉/声学 timestamp
+为整数毫秒，计算时间一致性和共同来源概率。一个视觉人物对应两个突发声音时激活
+fission，避免把两个声音错误合成一个来源。</p>
+<h3 id="s3wta侧抑制和唇音一致性">S3：WTA、侧抑制和唇音一致性</h3>
+<p>声学和视觉先保留独立证据，再用 WTA、邻近侧抑制、overlap/self-echo
+惩罚竞争。嘴部运动和 active-speaker
+只提高共同来源概率，不覆盖清晰的声学证据。麦格克式一致/冲突只能作为重打分和
+ASR 辅助，不能让错误唇形强行改变文字。</p>
+<h3 id="s4习惯化工作记忆和-hebbian-绑定">S4：习惯化、工作记忆和 Hebbian
+绑定</h3>
+<p>默认习惯化时间常数约5秒，工作记忆约8秒，维护视觉方位与声学方位的
+Hebbian 关联。PersonManager 另维护5秒离场重识别状态。一次
+Face/Body/Voice 跳变只改变概率表，不直接改变机器人决策目标。</p>
+<h3 id="s5状态机">S5：状态机</h3>
+<pre class="text"><code>IDLE -&gt; ORIENTING -&gt; ENGAGED -&gt; RELEASE</code></pre>
+<p>默认300ms防抖。声音可先触发定向，视觉在后续帧确认 gaze、body
+facing、嘴部运动和 Person。长期不稳定的身份关系触发
+<code>clarify_person_identity</code>
+主动行为建议，但不直接冒充权限或意图结论。</p>
+<h2 id="六ros2-topic-清单">六、ROS2 Topic 清单</h2>
+<h3 id="强类型工程主链路">强类型工程主链路</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>Topic</th>
+<th>类型</th>
+<th>发布者</th>
+<th>消费者</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/perception/vision/people</code></td>
+<td><code>perception_interfaces/msg/People</code></td>
+<td>Mac/Jetson视觉桥</td>
+<td><code>attention_stack</code>、ROS4HRI ingress</td>
+</tr>
+<tr>
+<td><code>/perception/voice/tracks</code></td>
+<td><code>perception_interfaces/msg/AcousticTracks</code></td>
+<td>Mac/Jetson声学桥</td>
+<td><code>attention_stack</code>、ROS4HRI ingress</td>
+</tr>
+<tr>
+<td><code>/perception/attention/state</code></td>
+<td><code>perception_interfaces/msg/AttentionState</code></td>
+<td>C++ attention</td>
+<td>S2S、运动、memory、UI</td>
+</tr>
+<tr>
+<td><code>/attention/look_at</code></td>
+<td><code>geometry_msgs/msg/PointStamped</code></td>
+<td>C++ attention</td>
+<td>头眼控制</td>
+</tr>
+<tr>
+<td><code>/attention/target_voice_id</code></td>
+<td><code>std_msgs/msg/String</code></td>
+<td>C++ attention</td>
+<td>S2S 目标流路由</td>
+</tr>
+<tr>
+<td><code>/attention/person_hypotheses</code></td>
+<td><code>std_msgs/msg/String</code> JSON</td>
+<td>PersonManager</td>
+<td>UI、memory、身份系统</td>
+</tr>
+<tr>
+<td><code>/attention/active_behaviors</code></td>
+<td><code>std_msgs/msg/String</code> JSON</td>
+<td>PersonManager</td>
+<td>问询等主动行为系统</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ros4hri-标准兼容输出">ROS4HRI 标准兼容输出</h3>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Topic</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/humans/faces/tracked</code></td>
+<td><code>hri_msgs/IdsList</code></td>
+<td>当前 Face transient IDs</td>
+</tr>
+<tr>
+<td><code>/humans/bodies/tracked</code></td>
+<td><code>hri_msgs/IdsList</code></td>
+<td>当前 Body transient IDs</td>
+</tr>
+<tr>
+<td><code>/humans/voices/tracked</code></td>
+<td><code>hri_msgs/IdsList</code></td>
+<td>当前 Voice transient IDs</td>
+</tr>
+<tr>
+<td><code>/humans/persons/tracked</code></td>
+<td><code>hri_msgs/IdsList</code></td>
+<td>当前 Person IDs</td>
+</tr>
+<tr>
+<td><code>/humans/persons/&lt;id&gt;/face_id</code></td>
+<td><code>std_msgs/String</code></td>
+<td>Person 到 Face 关联</td>
+</tr>
+<tr>
+<td><code>/humans/persons/&lt;id&gt;/body_id</code></td>
+<td><code>std_msgs/String</code></td>
+<td>Person 到 Body 关联</td>
+</tr>
+<tr>
+<td><code>/humans/persons/&lt;id&gt;/voice_id</code></td>
+<td><code>std_msgs/String</code></td>
+<td>Person 到 Voice 关联</td>
+</tr>
+<tr>
+<td><code>/humans/persons/&lt;id&gt;/engagement_status</code></td>
+<td><code>hri_msgs/EngagementLevel</code></td>
+<td>engagement 状态</td>
+</tr>
+<tr>
+<td><code>/humans/voices/&lt;id&gt;/is_speaking</code></td>
+<td><code>std_msgs/Bool</code></td>
+<td>VAD 状态</td>
+</tr>
+<tr>
+<td><code>/humans/voices/&lt;id&gt;/speech</code></td>
+<td><code>hri_msgs/LiveSpeech</code></td>
+<td>增量/最终文字</td>
+</tr>
+<tr>
+<td><code>/tf</code></td>
+<td><code>tf2_msgs/TFMessage</code></td>
+<td><code>face_*</code>、<code>gaze_*</code>、<code>body_*</code>、<code>voice_*</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="s1-s5-调试输出">S1-S5 调试输出</h3>
+<table>
+<thead>
+<tr>
+<th>Topic</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/attention/debug/s1_visual_saliency</code></td>
+<td>36-bin视觉显著性</td>
+</tr>
+<tr>
+<td><code>/attention/debug/s1_audio_saliency</code></td>
+<td>36-bin声学显著性</td>
+</tr>
+<tr>
+<td><code>/attention/debug/s2_fission</code></td>
+<td>fission是否激活</td>
+</tr>
+<tr>
+<td><code>/attention/debug/s3_competition</code></td>
+<td>WTA/侧抑制结果</td>
+</tr>
+<tr>
+<td><code>/attention/debug/s4_memory</code></td>
+<td>习惯化/工作记忆/Hebbian结果</td>
+</tr>
+<tr>
+<td><code>/attention/debug/s5_phase</code></td>
+<td>FSM状态</td>
+</tr>
+<tr>
+<td><code>/attention/debug/common_source_probability</code></td>
+<td>贝叶斯共同来源后验</td>
+</tr>
+</tbody>
+</table>
+<h2 id="七异步频率和延迟">七、异步频率和延迟</h2>
+<ul>
+<li>声学20-50Hz，TTL 180ms，过期快速丢弃。</li>
+<li>视觉5-10Hz，TTL 450ms，过期逐步降低 gaze/facing/confidence。</li>
+<li>机器人播放/运动20-50Hz，TTL 250ms。</li>
+<li>attention最多50Hz，不等待视觉和声学同一 timestamp。</li>
+<li>Mac实测当前融合周期约1-4ms；真实总反应延迟还包括采集buffer、网络、模型和电机。</li>
+<li>4090链路必须使用固定小块、后台队列、共享内存或二进制协议替代高频
+JSON 序列化。</li>
+</ul>
+<h2 id="八开源模型策略">八、开源模型策略</h2>
+<p>第一版不训练：YOLOv8n/YuNet/MediaPipe、ODAS/HARK、WebRTC
+AEC3、Asteroid/SpeechBrain、Vosk/Whisper/FunASR/SenseVoice、ECAPA-TDNN、SyncNet/Light-ASD/TalkNet
+都保留为插件或下游模型。SoundSpaces只用于离线
+RIR/场景仿真；AV-HuBERT只作为离线教师候选。</p>
+<p>只有出现稳定且不可由阵列标定、阈值、热词、时间窗和概率校准解决的错误，才考虑按以下顺序训练：active-speaker
+概率校准、远场 ECAPA 域适配、目标说话人提取、中文
+AVSR。不要从零训练基础视觉、ASR 或分离模型。</p>
+<h2 id="九49场景手工测试">九、49场景手工测试</h2>
+<p>完整逐项手册：<code>~/Golands/voice-detection/docs/ASR_MANUAL_TEST_GUIDE.md</code>。</p>
+<p>统一记录：原话、场所、距离、相对方向、背景声、遮挡、机器人状态、语速、dB(A)、口音、语言、笑声/咳嗽/轻声/喊话、最终转写、语言/清晰度、句首句尾、数字/名称/否定词、背景混入、多人拼接、开始/结束/结果时间。</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>阶段</th>
+<th>场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>mac_first_test</code></td>
+<td>基础语句、短词、长句、名称、数字、中英文、否定、多重否定、转述、时间、条件、多项信息、改口、语速、音量、口音、咳嗽、停顿、吃东西、安静首句、连续多轮、基础噪声</td>
+</tr>
+<tr>
+<td><code>spatial_hardware</code></td>
+<td>0.5/1.5/3/6m、前后左右、侧向背向、遮挡、空调、电视、音乐、户外噪声、强噪声、多人重叠和移动换位</td>
+</tr>
+<tr>
+<td><code>robot_hardware</code></td>
+<td>机器人播放、插话、相近内容、关节/行走/风扇噪声</td>
+</tr>
+<tr>
+<td><code>networked_asr</code></td>
+<td>4090 网络正常、变慢、断开、恢复和 ASR 重启</td>
+</tr>
+</tbody>
+</table>
+<h3 id="条逐项清单">49 条逐项清单</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 18%" />
+<col style="width: 18%" />
+<col style="width: 18%" />
+<col style="width: 18%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: right;">#</th>
+<th>场景 ID / 名称</th>
+<th>阶段</th>
+<th>测试原句</th>
+<th>所需能力</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">1</td>
+<td><code>quiet_natural_sentence</code> / 安静环境中的自然语句</td>
+<td><code>mac_first_test</code></td>
+<td>请帮我记一下明天下午三点去二号会议室找小王。</td>
+<td>microphone, vad, asr</td>
+</tr>
+<tr>
+<td style="text-align: right;">2</td>
+<td><code>short_word_no</code> / 单字、短词和短句</td>
+<td><code>mac_first_test</code></td>
+<td>不</td>
+<td>microphone, vad, asr</td>
+</tr>
+<tr>
+<td style="text-align: right;">3</td>
+<td><code>short_word_stop</code> / 单字、短词和短句</td>
+<td><code>mac_first_test</code></td>
+<td>停</td>
+<td>microphone, vad, asr</td>
+</tr>
+<tr>
+<td style="text-align: right;">4</td>
+<td><code>long_two_sentences</code> / 长句和连续两句</td>
+<td><code>mac_first_test</code></td>
+<td>我先去一楼拿文件，然后到三号会议室。等一下你提醒我给小李打电话。</td>
+<td>microphone, vad, asr</td>
+</tr>
+<tr>
+<td style="text-align: right;">5</td>
+<td><code>names_places_products</code> / 人名、地点和产品词汇</td>
+<td><code>mac_first_test</code></td>
+<td>小王在西门旁边的 Reachy Mini 展台等我。</td>
+<td>microphone, vad, asr</td>
+</tr>
+<tr>
+<td style="text-align: right;">6</td>
+<td><code>numbers_dates_units</code> / 数字、日期和单位</td>
+<td><code>mac_first_test</code></td>
+<td>十二号下午三点十三分到二号楼十三层。</td>
+<td>microphone, vad, asr</td>
+</tr>
+<tr>
+<td style="text-align: right;">7</td>
+<td><code>mixed_zh_en</code> / 中英文混合</td>
+<td><code>mac_first_test</code></td>
+<td>帮我把 Qwen TTS 和 ROS4HRI 的测试结果发给 Alex。</td>
+<td>microphone, vad, asr</td>
+</tr>
+<tr>
+<td style="text-align: right;">8</td>
+<td><code>negation</code> / 否定词</td>
+<td><code>mac_first_test</code></td>
+<td>别关灯，我今天不出去。</td>
+<td>microphone, vad, asr</td>
+</tr>
+<tr>
+<td style="text-align: right;">9</td>
+<td><code>double_negation</code> / 多重否定</td>
+<td><code>mac_first_test</code></td>
+<td>不是不去，我没说不要。</td>
+<td>microphone, vad, asr</td>
+</tr>
+<tr>
+<td style="text-align: right;">10</td>
+<td><code>reported_speech</code> / 转述和引用</td>
+<td><code>mac_first_test</code></td>
+<td>小王说他明天来，他说先别走。</td>
+<td>microphone, vad, asr</td>
+</tr>
+<tr>
+<td style="text-align: right;">11</td>
+<td><code>time_order</code> / 时间和先后关系</td>
+<td><code>mac_first_test</code></td>
+<td>现在先别动，待会儿再去二号会议室。</td>
+<td>microphone, vad, asr</td>
+</tr>
+<tr>
+<td style="text-align: right;">12</td>
+<td><code>condition_hypothesis</code> / 条件和假设</td>
+<td><code>mac_first_test</code></td>
+<td>如果下雨就不出去，要是他来了再告诉我。</td>
+<td>microphone, vad, asr</td>
+</tr>
+<tr>
+<td style="text-align: right;">13</td>
+<td><code>multi_information</code> / 多项信息组合</td>
+<td><code>mac_first_test</code></td>
+<td>明天下午三点去二号会议室找小王，但别叫小李。</td>
+<td>microphone, vad, asr</td>
+</tr>
+<tr>
+<td style="text-align: right;">14</td>
+<td><code>correction</code> / 犹豫和改口</td>
+<td><code>mac_first_test</code></td>
+<td>去一号……不，二号会议室。</td>
+<td>microphone, vad, asr</td>
+</tr>
+<tr>
+<td style="text-align: right;">15</td>
+<td><code>fast_speech</code> / 快慢语速</td>
+<td><code>mac_first_test</code></td>
+<td>你先过来一下然后把那个杯子放到桌子右边。</td>
+<td>microphone, vad, asr</td>
+</tr>
+<tr>
+<td style="text-align: right;">16</td>
+<td><code>quiet_voice</code> / 音量变化</td>
+<td><code>mac_first_test</code></td>
+<td>轻声说话时也要把句首和句尾记完整。</td>
+<td>microphone, vad, asr</td>
+</tr>
+<tr>
+<td style="text-align: right;">17</td>
+<td><code>accent_common</code> / 常见口音</td>
+<td><code>mac_first_test</code></td>
+<td>今天晚上八点半到办公室找我。</td>
+<td>microphone, vad, asr</td>
+</tr>
+<tr>
+<td style="text-align: right;">18</td>
+<td><code>cough_laugh</code> / 笑声、咳嗽和清嗓</td>
+<td><code>mac_first_test</code></td>
+<td>咳嗽之后继续说，把这句话完整记下来。</td>
+<td>microphone, vad, asr</td>
+</tr>
+<tr>
+<td style="text-align: right;">19</td>
+<td><code>pause_repeat_fillers</code> / 停顿、重复和口头语</td>
+<td><code>mac_first_test</code></td>
+<td>嗯，那个，就是明天……明天再去。</td>
+<td>microphone, vad, asr</td>
+</tr>
+<tr>
+<td style="text-align: right;">20</td>
+<td><code>eating_while_speaking</code> / 边吃东西边说话</td>
+<td><code>mac_first_test</code></td>
+<td>我吃完以后再去会议室。</td>
+<td>microphone, vad, asr</td>
+</tr>
+<tr>
+<td style="text-align: right;">21</td>
+<td><code>distance_0_5m</code> / 不同距离</td>
+<td><code>mac_first_test</code></td>
+<td>我在近距离说一句完整的话。</td>
+<td>microphone, vad, asr</td>
+</tr>
+<tr>
+<td style="text-align: right;">22</td>
+<td><code>distance_1_5m</code> / 不同距离</td>
+<td><code>mac_first_test</code></td>
+<td>我在日常距离说一句完整的话。</td>
+<td>microphone, vad, asr</td>
+</tr>
+<tr>
+<td style="text-align: right;">23</td>
+<td><code>distance_3m</code> / 不同距离</td>
+<td><code>spatial_hardware</code></td>
+<td>我在远距离说一句完整的话。</td>
+<td>multichannel_array, doa, separation, asr</td>
+</tr>
+<tr>
+<td style="text-align: right;">24</td>
+<td><code>distance_6m_call</code> / 不同距离</td>
+<td><code>spatial_hardware</code></td>
+<td>远距离召唤时请把这句话记下来。</td>
+<td>multichannel_array, doa, separation, asr</td>
+</tr>
+<tr>
+<td style="text-align: right;">25</td>
+<td><code>side_back_speech</code> / 用户背向或侧向说话</td>
+<td><code>spatial_hardware</code></td>
+<td>我现在侧对机器人说话。</td>
+<td>multichannel_array, doa, separation, asr</td>
+</tr>
+<tr>
+<td style="text-align: right;">26</td>
+<td><code>front_back_left_right</code> / 不同相对方向</td>
+<td><code>spatial_hardware</code></td>
+<td>我从不同方向重复这句话。</td>
+<td>multichannel_array, doa, separation, asr</td>
+</tr>
+<tr>
+<td style="text-align: right;">27</td>
+<td><code>doorway_occlusion</code> / 门口和局部遮挡</td>
+<td><code>mac_first_test</code></td>
+<td>我在隔断后面说这句话。</td>
+<td>microphone, vad, asr</td>
+</tr>
+<tr>
+<td style="text-align: right;">28</td>
+<td><code>steady_noise</code> / 空调、风扇和设备持续声</td>
+<td><code>mac_first_test</code></td>
+<td>空调开着的时候请识别这句话。</td>
+<td>microphone, vad, asr</td>
+</tr>
+<tr>
+<td style="text-align: right;">29</td>
+<td><code>tv_chat_noise</code> / 餐桌聊天和电视</td>
+<td><code>spatial_hardware</code></td>
+<td>电视和旁人聊天时只记录主要测试者这句话。</td>
+<td>multichannel_array, doa, separation, asr</td>
+</tr>
+<tr>
+<td style="text-align: right;">30</td>
+<td><code>transient_life_noise</code> / 偶尔出现的生活声音</td>
+<td><code>mac_first_test</code></td>
+<td>关门声出现时不要截断这句话。</td>
+<td>microphone, vad, asr</td>
+</tr>
+<tr>
+<td style="text-align: right;">31</td>
+<td><code>music_noise</code> / 音乐播放</td>
+<td><code>spatial_hardware</code></td>
+<td>播放音乐的时候不要把歌词混进这句话。</td>
+<td>multichannel_array, doa, separation, asr</td>
+</tr>
+<tr>
+<td style="text-align: right;">32</td>
+<td><code>outdoor_weather_traffic</code> / 户外风雨和车辆声</td>
+<td><code>mac_first_test</code></td>
+<td>风声和车辆声里请识别这句话。</td>
+<td>microphone, vad, asr</td>
+</tr>
+<tr>
+<td style="text-align: right;">33</td>
+<td><code>strong_noise_mid_sentence</code> / 说话途中出现强噪声</td>
+<td><code>spatial_hardware</code></td>
+<td>强噪声出现前、中、后都要记录差异。</td>
+<td>multichannel_array, doa, separation, asr</td>
+</tr>
+<tr>
+<td style="text-align: right;">34</td>
+<td><code>echo_room</code> / 走廊、玻璃门和空会议室</td>
+<td><code>mac_first_test</code></td>
+<td>回声环境里不要重复句尾。</td>
+<td>microphone, vad, asr</td>
+</tr>
+<tr>
+<td style="text-align: right;">35</td>
+<td><code>robot_playback_only</code> / 只有机器人播放声音</td>
+<td><code>mac_first_test</code></td>
+<td>无固定原句</td>
+<td>microphone, vad, asr</td>
+</tr>
+<tr>
+<td style="text-align: right;">36</td>
+<td><code>robot_speaking_barge_in</code> /
+用户在机器人说话时插入一句话</td>
+<td><code>spatial_hardware</code></td>
+<td>不是现在开始，等一下。</td>
+<td>multichannel_array, doa, separation, asr</td>
+</tr>
+<tr>
+<td style="text-align: right;">37</td>
+<td><code>similar_robot_user_content</code> /
+用户与机器人说相近内容</td>
+<td><code>spatial_hardware</code></td>
+<td>不是现在开始。</td>
+<td>multichannel_array, doa, separation, asr</td>
+</tr>
+<tr>
+<td style="text-align: right;">38</td>
+<td><code>robot_motion_noise</code> / 机器人运动时产生的声音</td>
+<td><code>robot_hardware</code></td>
+<td>机器人转动时也要听清楚这句话。</td>
+<td>robot_motion, playback_reference, microphone</td>
+</tr>
+<tr>
+<td style="text-align: right;">39</td>
+<td><code>sequential_speakers</code> / 两至三人依次说话</td>
+<td><code>spatial_hardware</code></td>
+<td>第一位测试者先说这句话。</td>
+<td>multichannel_array, doa, separation, asr</td>
+</tr>
+<tr>
+<td style="text-align: right;">40</td>
+<td><code>two_speakers_overlap</code> / 两人部分重叠</td>
+<td><code>spatial_hardware</code></td>
+<td>主要测试者说的这句话需要单独记录。</td>
+<td>multichannel_array, doa, separation, asr</td>
+</tr>
+<tr>
+<td style="text-align: right;">41</td>
+<td><code>two_speakers_full_overlap</code> / 两人完全重叠</td>
+<td><code>spatial_hardware</code></td>
+<td>其中一个人包含否定词，不要走。</td>
+<td>multichannel_array, doa, separation, asr</td>
+</tr>
+<tr>
+<td style="text-align: right;">42</td>
+<td><code>similar_direction_volume</code> / 相近方向和不同音量</td>
+<td><code>spatial_hardware</code></td>
+<td>两个人在相近方向说话。</td>
+<td>multichannel_array, doa, separation, asr</td>
+</tr>
+<tr>
+<td style="text-align: right;">43</td>
+<td><code>multi_direction_overlap</code> / 多人从不同方向同时说话</td>
+<td><code>spatial_hardware</code></td>
+<td>主要测试者从正前方说这句话。</td>
+<td>multichannel_array, doa, separation, asr</td>
+</tr>
+<tr>
+<td style="text-align: right;">44</td>
+<td><code>moving_speakers_swap</code> / 两人边走边说话并互换位置</td>
+<td><code>spatial_hardware</code></td>
+<td>我边走边说，请不要截断。</td>
+<td>multichannel_array, doa, separation, asr</td>
+</tr>
+<tr>
+<td style="text-align: right;">45</td>
+<td><code>first_after_long_silence</code> / 长时间安静后的第一句话</td>
+<td><code>mac_first_test</code></td>
+<td>安静很久后的第一句话。</td>
+<td>microphone, vad, asr</td>
+</tr>
+<tr>
+<td style="text-align: right;">46</td>
+<td><code>continuous_turns</code> / 连续多轮说话</td>
+<td><code>mac_first_test</code></td>
+<td>这是连续多轮里的第一句。</td>
+<td>microphone, vad, asr</td>
+</tr>
+<tr>
+<td style="text-align: right;">47</td>
+<td><code>long_duration_mixed_conditions</code> / 长时间连续测试</td>
+<td><code>mac_first_test</code></td>
+<td>长时间测试恢复后的第一句话。</td>
+<td>microphone, vad, asr</td>
+</tr>
+<tr>
+<td style="text-align: right;">48</td>
+<td><code>long_running_restart</code> / 重新启动语音识别</td>
+<td><code>mac_first_test</code></td>
+<td>重启之后第一句话不要丢句首。</td>
+<td>microphone, vad, asr</td>
+</tr>
+<tr>
+<td style="text-align: right;">49</td>
+<td><code>network_drop_recover</code> / 网络变慢或中断时说话</td>
+<td><code>networked_asr</code></td>
+<td>网络恢复后不要重复中断前的文字。</td>
+<td>network_conditioner, asr</td>
+</tr>
+</tbody>
+</table>
+<p>ASR场景文件：<code>~/Golands/voice-detection/data/asr_acceptance_scenarios.jsonl</code>，共49条。它不包含
+intent、permission、身份或动作结论。</p>
+<h3 id="sipeed-61-现场摆位与逐条执行卡">9.1 Sipeed 6+1
+现场摆位与逐条执行卡</h3>
+<p>这 49
+条不是“在面板里点一下”的测试，而是可重复的物理验收。每次只改变一个变量，并在句前、句后各留
+2 秒静音。</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>项目</th>
+<th>固定要求</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>麦克风</td>
+<td>Sipeed 6+1 环形阵列水平放置，阵列中心朝向摄像头；不要遮挡阵列孔</td>
+</tr>
+<tr>
+<td>摄像头</td>
+<td>Mac 原生摄像头置于眼睛高度，人物脸部位于画面中线</td>
+</tr>
+<tr>
+<td>单人基线</td>
+<td>人坐在镜头正前方，眼睛到镜头 1.5 m，嘴到阵列约 1.0–1.5 m</td>
+</tr>
+<tr>
+<td>距离组</td>
+<td>0.5 m、1.5 m、3 m；6 m 仅做“能否触发”极限记录</td>
+</tr>
+<tr>
+<td>方向组</td>
+<td>正前 0°、左/右约 45°、侧面 ±90°；以阵列正前为 0°</td>
+</tr>
+<tr>
+<td>音量组</td>
+<td>正常 60–65 dB(A)<span class="citation"
+data-cites="1m">@1m</span>；轻声 45–50 dB(A)；喊话 70–75
+dB(A)，禁止削波</td>
+</tr>
+<tr>
+<td>环境</td>
+<td>基线 35–45 dB(A)；噪声场景记录空调/电视/音乐的实际位置和音量</td>
+</tr>
+<tr>
+<td>说话方式</td>
+<td>一条场景一句话；不要自行改写原句；句首和句尾说完整</td>
+</tr>
+</tbody>
+</table>
+<p>每条场景按以下顺序执行：</p>
+<ol type="1">
+<li>在
+<code>~/Golands/voice-detection/data/asr_acceptance_scenarios.jsonl</code>
+找到对应 <code>scenario_id</code>，按本节摆位。</li>
+<li>确认 8092 显示 <code>声学=绿</code>、<code>视觉=绿</code>，并用
+<code>curl -fsS http://127.0.0.1:8092/api/state</code>
+保存起始快照。</li>
+<li>测试者按规定音量说原句，必要时按场景要求让第二人/机器人同时发声。</li>
+<li>等待 1 秒，保存
+<code>curl -fsS http://127.0.0.1:8090/api/state</code> 和 8092
+快照。</li>
+<li>记录
+<code>last_transcript.text/is_final</code>、<code>last_track.track_id/speaker_label/speaker_similarity/azimuth_deg/clarity/overlap_probability/self_echo_probability</code>、<code>last_vad.active/probability/rms_dbfs/noise_floor_dbfs/snr_db</code>，以及
+<code>attention.target_id/listen/addressed_to_robot/confidence</code>。</li>
+<li>同一场景至少重复 3 次；三次中 2
+次达到通过条件才记为通过。把失败归因到 VAD、前端、ASR
+或融合层，不要只记“识别错”。</li>
+</ol>
+<h4 id="弱声沙哑和远距离专门判定">弱声、沙哑和远距离专门判定</h4>
+<ul>
+<li>原始波形有变化但 <code>last_vad.active=false</code>：先判为
+VAD/AGC/降噪问题。若 <code>rms_dbfs</code> 上升而
+<code>snr_db &lt; 6</code>，继续降低噪声底估计速度或检查阵列通道增益；不要先换
+ASR。</li>
+<li><code>last_vad.active=true</code>、<code>speech_probability</code>
+稳定但最终文字为空/错：判为 ASR 输入或模型域问题。确认送入 ASR
+的文件为单声道、16-bit、16 kHz，并检查句首是否因预缓存不足丢失。</li>
+<li>轻声和感冒沙哑测试必须使用
+<code>VOICE_PRE_ROLL_MS=320</code>、<code>VOICE_ENDPOINT_SILENCE_MS=600</code>
+的默认值；若仍漏检，逐步把 <code>VOICE_MIN_SPEECH_MS</code> 调到
+40，不要把 VAD 阈值一次降到 0。</li>
+<li>机器人播放场景必须同时记录 <code>self_echo_probability</code>
+和播放参考是否接入；只有麦克风波形而无 playback reference 时，不能宣称
+AEC 已验证。</li>
+</ul>
+<h4 id="现场调参顺序硬件不变">现场调参顺序（硬件不变）</h4>
+<p>先执行“静音 10 秒 + 正常语音 3
+次”，再按顺序只改一个参数：<code>VAD threshold 6→5 dB</code>；
+<code>min_rms -58→-62 dBFS</code>；<code>AGC max gain +12→+18 dB</code>；确认降噪不超过
+0.35； 最后才检查 ASR 重采样和模型。每次改动都要回跑场景
+1、15、21、35、45，避免只优化单个距离。</p>
+<h2 id="十启动命令">十、启动命令</h2>
+<h3 id="声学单独">声学单独</h3>
+<div class="sourceCode" id="cb18"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> ~/Golands/robot-attention-perception</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="ex">scripts/run_acoustic_test.sh</span></span></code></pre></div>
+<p>面板：<code>http://127.0.0.1:8090</code>。选择
+<code>mac_builtin</code> + Mac麦克风，或
+<code>sipeed_6_plus_1_usb_array</code> + 至少8输入通道的 Sipeed
+设备。</p>
+<h3 id="视觉单独">视觉单独</h3>
+<div class="sourceCode" id="cb19"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> ~/Golands/robot-attention-perception</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="ex">scripts/run_visual_test.sh</span></span></code></pre></div>
+<p>面板：<code>http://127.0.0.1:8080</code>。默认 Mac camera。后续
+source 可切 RealSense；M1建议在 Linux/Jetson ROS topic 上运行。</p>
+<h3 id="四体完整-ros2">四体完整 ROS2</h3>
+<div class="sourceCode" id="cb20"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> ~/Golands/robot-attention-perception</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="ex">scripts/run_full_test.sh</span></span></code></pre></div>
+<p>统一面板：<code>http://127.0.0.1:8092</code>。在面板中独立选择摄像头和麦克风，然后点击启动。ROS2容器使用
+<code>ws://127.0.0.1:9090</code>，memory 使用
+<code>http://127.0.0.1:8788</code>。</p>
+<div class="sourceCode" id="cb21"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="ex">scripts/stop_mac_first_test.sh</span></span></code></pre></div>
+<h3 id="sipeed-原始8ch预检">Sipeed 原始8ch预检</h3>
+<div class="sourceCode" id="cb22"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> ~/Golands/robot-attention-perception</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="ex">scripts/check_sipeed.sh</span> <span class="op">&lt;</span>设备编号<span class="op">&gt;</span> 10</span></code></pre></div>
+<p>期望
+<code>channel_count=8</code>、<code>sample_rate_hz=48000</code>。拍手和从已知方向说话后，再开始完整组合测试。</p>
+<h2 id="十一当前限制">十一、当前限制</h2>
+<p>软件自动化和 ROS2 roundtrip
+已通过，但不能代替物理验收。DOA绝对角度、多人完全重叠、远距离、遮挡、机器人运动噪声、真实扬声器
+AEC 和所有 ASR 文字正确性必须按49条记录实际测试。每次阶段完成后更新
+<code>docs/PROGRESS.md</code>，以便切换 session 后继续。</p>
+<p>参考：ROS4HRI standard / REP-155；HARK；ODAS ROS2；RealSense
+ROS；INDEMIND M1 SDK；SpeechBrain；AV-HuBERT。</p>
+</body>
+</html>
