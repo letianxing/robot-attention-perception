@@ -782,6 +782,7 @@ class LivePerceptionRuntime:
             "voice": {"last_streaming_transcript":voice_payload.get("last_streaming_transcript"), "last_vad": voice_payload.get("last_vad"), "playback": voice_payload.get("playback"), "audio_scene": voice_payload.get("audio_scene")},
             "workspace_events": self._workspace_events(),
             "person_hypotheses": state["person_hypotheses"], "attention": attention_data, "reflex_attention": self.reflex_attention.focus, "crossmodal_events":self.crossmodal_state,"interaction_transitions":list(self.interaction.transitions),
+            "voice_bindings": state["voice_bindings"],
             "utterances": list(self.conversation.turns)[-8:], "interruption_candidate": self.conversation.interruption,
         })
         with self.lock:
